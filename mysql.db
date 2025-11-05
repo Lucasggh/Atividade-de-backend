@@ -1,0 +1,18 @@
+          const task = {
+                id: editingTaskId || Date.now().toString(),
+                title: taskTitle.value.trim(),
+                description: taskDescription.value.trim(),
+                priority: taskPriority.value,
+                completed: editingTaskId ? tasks.find(t => t.id === editingTaskId).completed : false,
+                createdAt: editingTaskId ? tasks.find(t => t.id === editingTaskId).createdAt : new Date().toISOString()
+            };
+
+            
+            CREATE TABLE task (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(100) NOT NULL UNIQUE,
+                description VARCHAR(500),
+                priority ENUM('baixa','media','alta') DEFAULT 'media',
+                completed BOOLEAN DEFAULT FALSE,
+                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
