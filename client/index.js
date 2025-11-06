@@ -1,4 +1,4 @@
-        let tasks = [];// lista de tasks
+        let tasks = [];
         let editingTaskId = null;
         let currentFilter = 'todas';
 
@@ -15,7 +15,7 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const formTitle = document.getElementById('formTitle');
         const filterBtns = document.querySelectorAll('.filter-btn');
-
+        ;
         // Inicialização
         loadTasks();//CARREGA TASKS DO COOKIES
         updateStats();//ATUALIZA OS NUMEROS DE COMPLETSO E PENDENTES ETC
@@ -36,36 +36,32 @@
         // Funções principais
         function handleSubmit(e) {
             e.preventDefault();
-            
             const task = {
-                id: editingTaskId || Date.now().toString(),
                 title: taskTitle.value.trim(),
                 description: taskDescription.value.trim(),
                 priority: taskPriority.value,
                 completed: editingTaskId ? tasks.find(t => t.id === editingTaskId).completed : false,
-                createdAt: editingTaskId ? tasks.find(t => t.id === editingTaskId).createdAt : new Date().toISOString()
-            };
+                createdAt: editingTaskId ? tasks.find(t => t.id === editingTaskId).createdAt : new Date().toISOString()}
+            
 
             if (editingTaskId) {
-                const index = tasks.findIndex(t => t.id === editingTaskId);
-                tasks[index] = task;
-                editingTaskId = null;
-                submitBtn.textContent = 'Adicionar Tarefa';
-                cancelBtn.style.display = 'none';
-                formTitle.textContent = '➕ Nova Tarefa';
+                axios.put(`http://127.0.0.1:3001/atualizar/${editingTaskId}`,task)
             } else {
-                tasks.unshift(task);
-            }
-
-            saveTasks();
+                axios.post("http://127.0.0.1:3001/create", task)
+                .then(() => {
+                loadTasks();            saveTasks()
             updateStats();
             renderTasks();
             taskForm.reset();
             taskPriority.value = 'media';
+                });
+             }
+
+
         }
 
         function renderTasks() {
-            let filteredTasks = [...tasks];//espalha todas as
+            let filteredTasks = [...tasks];
 
             // Aplicar filtros
             if (currentFilter === 'pendentes') {
@@ -170,30 +166,24 @@
             document.getElementById('completedTasks').textContent = completed;
             document.getElementById('pendingTasks').textContent = pending;
         }
-
-        function saveTasks() {
-            try {
-                const tasksData = JSON.stringify(tasks);
-                document.cookie = `tasks=${encodeURIComponent(tasksData)}; path=/; max-age=31536000; SameSite=Lax`;
-            } catch (error) {
-                console.error('Erro ao salvar tarefas:', error);
-            }
-        }
-
         function loadTasks() {
-            try {
-                const cookies = document.cookie.split(';');
-                const tasksCookie = cookies.find(c => c.trim().startsWith('tasks='));
+            axios.get("http://127.0.0.1:3001/pegarTask")
+            .then(response => {
+                console.log(response.data)
+                tasks = response.data.tarefas
+                updateStats()
+                renderTasks()
+            })}
                 
-                if (tasksCookie) {
-                    const tasksData = decodeURIComponent(tasksCookie.split('=')[1]);
-                    tasks = JSON.parse(tasksData);
-                }
-            } catch (error) {
-                console.error('Erro ao carregar tarefas:', error);
-                tasks = [];
-            }
-        }
+        
+        function saveTasks() {
+            axios.post("http://127.0.0.1:3001/create",task).then(response=>{
+                console.log("tarefa criada com sucesso",response.data)
+                loadTasks()
+                taskForm.reset()
+            })}
+
+
 
         function formatDate(dateString) {
             const date = new Date(dateString);

@@ -1,17 +1,17 @@
 const express = require("express");
 const app = express();
-const mysql = require("mysql2");
+const mysql2 = require("mysql2");
 const cors = require ("cors");
 
 app.use(cors());
 app.use(express.json())
 
-const db = mysql.createConnection({
+const db = mysql2.createConnection({
     host:"127.0.0.1",
     user:"root",
     password:"Lucasggh12344@",
     database:"todo_app",
-    port: 3300
+    port: 3306
 });
 db.connect((err) => {
     if(err){
@@ -50,6 +50,20 @@ app.post("/create",(req,res)=>{
         }
     } )
 })
+
+app.put("/atualizar/:id",(req,res)=>{
+    const title = req.body.title
+    const description = req.body.description
+    const priority = req.body.priority
+    const completed = req.body.completed
+    const completedAt = req.body.completedAt
+    const id = req.params.id
+    db.query("UPDATE task SET title=?,description=?,priority=?,completed=?,completedAt=? WHERE id=?",[title,description,priority,completed,completedAt,id],
+        (err,result)=>{
+            if(err){
+                console.log(err)
+            }else{res.status(200)}
+        })})
 
 app.listen(3001,()=>{
         console.log("Servidor Ligado!")
