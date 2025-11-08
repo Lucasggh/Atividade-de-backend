@@ -18,7 +18,6 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const formTitle = document.getElementById('formTitle');
         const filterBtns = document.querySelectorAll('.filter-btn');
-        ;
         // Inicialização
         loadTasks();//CARREGA TASKS DO COOKIES
         updateStats();//ATUALIZA OS NUMEROS DE COMPLETSO E PENDENTES ETC
@@ -48,14 +47,12 @@
             
 
             if (editingTaskId) {
-                axios.put(`http://127.0.0.1:3001/atualizar/${editingTaskId}`,task)
+                axios.put(`http://127.0.0.1:3001/atualizar/${editingTaskId}`,task).then(()=>{loadTasks();})
+
             } else {
                 saveTasks(task)
                 .then(() => {
                     loadTasks();
-
-                    updateStats();
-                    renderTasks();
                     taskForm.reset();
                     taskPriority.value = 'media';
                 });
@@ -149,17 +146,6 @@
             renderTasks();
         }
 
-        function deleteTask(id) {
-            if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
-                tasks = tasks.filter(t => t.id !== id);
-                if (editingTaskId === id) {
-                    cancelEdit();
-                }
-                saveTasks();
-                updateStats();
-                renderTasks();
-            }
-        }
 
         function updateStats() {
             const total = tasks.length;
@@ -174,15 +160,34 @@
             axios.get("http://127.0.0.1:3001/pegarTask")
             .then(response => {
                 console.log(response.data)
-                tasks = response.data.tarefas
+                tasks = response.data.tasks
                 updateStats()
                 renderTasks()
             })}
 
+        function deleteTask(id) {
+            if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
+                axios.delete(`http://127.0.0.1:3001/deletar/${id}`)
+                    .then(response =>{
+                        console.log(response.data.taskId)
+                tasks = tasks.filter(t => t.id !== id);
+                if (editingTaskId === id) {
+                    cancelEdit();
+                }
+                loadTasks()
+                updateStats();
+                renderTasks();
+                    })
+                    .catch(error=>{
+                        console.log("Erro ao deletar task",error)
+                        alert("nao foi possivel deletar a tarefa")
+                    })
+            }
+        }
 
         function saveTasks(task) {
             // Retorna a Promise para o then poder ser usado
-            return axios.post("http://127.0.0.1:3001/create", task)
+            return axios.post("http://127.0.0.1:3001/criar", task)
                 .then(response => {
                     console.log("tarefa criada com sucesso", response.data);
                 });

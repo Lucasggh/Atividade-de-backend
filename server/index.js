@@ -30,14 +30,14 @@ app.get("/",(req,res)=>{
 app.get("/pegarTask",(req,res)=>{
     db.query('SELECT * FROM task',(err,result)=>{
         if(err){
-            res.status(500).json({mensagem:"Erro no servidor", erro:err})}
+            res.status(500).json({message:"Erro no servidor", error:err})}
         else{
-            res.status(200).json({mensagem:"Tarefas buscadas com sucesso", tarefas:result})
+            res.status(200).json({message:"Tarefas buscadas com sucesso", tasks:result})
         }
     })
 })
 
-app.post("/create",(req,res)=>{
+app.post("/criar",(req,res)=>{
     const title = req.body.title
     const description = req.body.description
     const priority = req.body.priority
@@ -46,12 +46,12 @@ app.post("/create",(req,res)=>{
 
     db.query('INSERT INTO task (title,description,priority,completed,createdAt) VALUES (?,?,?,?,?)',[title,description,priority,completed,createdAt],(err,result)=>{
         if(err){
-            res.status(500).json({mensagem:"Erro no servidor", erro:err})
+            res.status(500).json({message:"Erro no servidor", error:err})
             console.log("erro no servidor",err)
         }
 
         else{
-            res.status(201).json({mensagem:"Tarefa criada com sucesso", taskid:result.insertId})
+            res.status(201).json({message:"Tarefa criada com sucesso", taskId:result.insertId})
         }
     } )
 })
@@ -61,7 +61,7 @@ app.put("/atualizar/:id", (req, res) => {
     const description = req.body.description;
     const priority = req.body.priority;
     const completed = req.body.completed;
-    const createdAt = req.body.createdAt;
+    const createdAt = formatDateForMySQL(req.body.createdAt);
     const id = req.params.id;
 
     db.query(
@@ -69,17 +69,31 @@ app.put("/atualizar/:id", (req, res) => {
         [title, description, priority, completed, createdAt, id],
         (err, result) => {
             if (err) {
-                res.status(500).json({ mensagem: "Erro no servidor, verifique a resposta", erro: err });
+                res.status(500).json({ message: "Erro no servidor, verifique a resposta", error: err });
             } else if (result.affectedRows === 0) {
-                res.status(404).json({ mensagem: "Erro ao tentar encontrar a tarefa, verifique resultado", affectedRows: result.affectedRows });
+                res.status(404).json({ message: "Tarefa nao encontrada",taskId:id, affectedRows: result.affectedRows });
             } else {
-                res.status(200).json({ mensagem: "task atualizada com sucesso", taskid: id });
+                res.status(200).json({ message: "task atualizada com sucesso", taskId: id,affectedRows: result.affectedRows});
             }
         }
     );
 })
 
-app.listen(parseInt(process.env.PORT),()=>{
-    console.log("servidor rodando")
+app.delete("/deletar/:id",(req,res)=>{
+    const id = req.params.id
+    db.query("DELETE FROM task WHERE id=?",[id],(err,result)=>{
+        if(err){
+            res.status(500).json({message:"Erro no servidor,verifique a resposta",error:err})
+        }else if(result.affectedRows ===0){
+            res.status(404).json({message:"Tarefa nao encontrada"})
+        }else{
+            res.status(200).json({message:"Tarefa deletada",taskId:id})
+        }
+    })
+
 })
 
+
+app.listen(parseInt(process.env.PORT,10),()=>{
+    console.log("servidor rodando")
+})
