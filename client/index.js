@@ -1,6 +1,9 @@
+
+
         let tasks = [];
         let editingTaskId = null;
         let currentFilter = 'todas';
+
 
         /**
          * !seleciona do html todos os botoes e etc que irei usar
@@ -47,13 +50,14 @@
             if (editingTaskId) {
                 axios.put(`http://127.0.0.1:3001/atualizar/${editingTaskId}`,task)
             } else {
-                axios.post("http://127.0.0.1:3001/create", task)
+                saveTasks(task)
                 .then(() => {
-                loadTasks();            saveTasks()
-            updateStats();
-            renderTasks();
-            taskForm.reset();
-            taskPriority.value = 'media';
+                    loadTasks();
+
+                    updateStats();
+                    renderTasks();
+                    taskForm.reset();
+                    taskPriority.value = 'media';
                 });
              }
 
@@ -174,14 +178,15 @@
                 updateStats()
                 renderTasks()
             })}
-                
-        
-        function saveTasks() {
-            axios.post("http://127.0.0.1:3001/create",task).then(response=>{
-                console.log("tarefa criada com sucesso",response.data)
-                loadTasks()
-                taskForm.reset()
-            })}
+
+
+        function saveTasks(task) {
+            // Retorna a Promise para o then poder ser usado
+            return axios.post("http://127.0.0.1:3001/create", task)
+                .then(response => {
+                    console.log("tarefa criada com sucesso", response.data);
+                });
+        }
 
 
 
