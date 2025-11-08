@@ -1,5 +1,4 @@
 
-
         let tasks = [];
         let editingTaskId = null;
         let currentFilter = 'todas';
@@ -42,12 +41,20 @@
                 title: taskTitle.value.trim(),
                 description: taskDescription.value.trim(),
                 priority: taskPriority.value,
-                completed: editingTaskId ? tasks.find(t => t.id === editingTaskId).completed : false,
-                createdAt: editingTaskId ? tasks.find(t => t.id === editingTaskId).createdAt : new Date().toISOString()}
-            
+                completed: editingTaskId ? tasks.find(t => Number(t.id) === Number(editingTaskId)).completed : false,
+                createdAt: editingTaskId ? tasks.find(t => Number(t.id) === Number(editingTaskId)).createdAt : new Date().toISOString()}
+
 
             if (editingTaskId) {
-                axios.put(`http://127.0.0.1:3001/atualizar/${editingTaskId}`,task).then(()=>{loadTasks();})
+                const originalTask = tasks.find(t => Number(t.id) === Number(editingTaskId))
+                const newTask = {
+                    title: taskTitle.value.trim(),
+                    description: taskDescription.value.trim(),
+                    priority: taskPriority.value,
+                    completed: originalTask.completed,
+                    completedAt: originalTask.completedAt
+                }
+                axios.put(`http://127.0.0.1:3001/atualizar/${editingTaskId}`,newTask).then(()=>{loadTasks();})
 
             } else {
                 saveTasks(task)
@@ -87,7 +94,7 @@
             }
 
             tasksContainer.innerHTML = filteredTasks.map(task => `
-                <div class="task-item ${task.completed ? 'completed' : ''} ${editingTaskId === task.id ? 'edit-mode' : ''}" data-id="${task.id}">
+                <div class="task-item ${task.completed ? 'completed' : ''} ${editingTaskId === Number(task.id) ? 'edit-mode' : ''}" data-id="${task.id}">
                     <div class="task-header">
                         <div class="task-content">
                             <div class="task-title">${escapeHtml(task.title)}</div>
@@ -112,17 +119,21 @@
         }
 
         function toggleComplete(id) {
-            const task = tasks.find(t => t.id === id);
+            const task = tasks.find(t => t.id === Number(id));
             if (task) {
                 task.completed = !task.completed;
-                saveTasks();
-                updateStats();
-                renderTasks();
+                axios.put(`http://127.0.0.1:3001/atualizar/${id}`,task).then((response)=>{
+                    loadTasks()
+                    console.log(response.data.id,response.data.affectedRows)
+                }).catch(err=>{
+                    console.log("nao foi possivel atualizar a tarefa",err)
+                    alert("Não foi possível atualizar a tarefa. Tente novamente.")
+                })
+
             }
         }
-
         function editTask(id) {                             // HTTP EDIT
-            const task = tasks.find(t => t.id === id);
+            const task = tasks.find(t => t.id === Number(id));
             if (task) {
                 editingTaskId = id;
                 taskTitle.value = task.title;
@@ -135,6 +146,18 @@
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
+        // function editTask(id) {                             // HTTP EDIT
+        //     const task = tasks.find(t => t.id === Number(id));
+        //     if (task) {
+        //         axios.put(`http://127.0.0.1:3001/atualizar/${id}`,task).then((response)=>{})
+        //
+        //         submitBtn.textContent = '💾 Salvar Alterações';
+        //         cancelBtn.style.display = 'inline-block';
+        //         formTitle.textContent = '✏️ Editando Tarefa';
+        //         taskTitle.focus();
+        //         window.scrollTo({ top: 0, behavior: 'smooth' });
+        //     }
+        // }
 
         function cancelEdit() {
             editingTaskId = null;
@@ -170,7 +193,7 @@
                 axios.delete(`http://127.0.0.1:3001/deletar/${id}`)
                     .then(response =>{
                         console.log(response.data.taskId)
-                tasks = tasks.filter(t => t.id !== id);
+                tasks = tasks.filter(t => Number(t.id) !== Number(id));
                 if (editingTaskId === id) {
                     cancelEdit();
                 }

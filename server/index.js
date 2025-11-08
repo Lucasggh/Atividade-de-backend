@@ -61,7 +61,7 @@ app.put("/atualizar/:id", (req, res) => {
     const description = req.body.description;
     const priority = req.body.priority;
     const completed = req.body.completed;
-    const createdAt = formatDateForMySQL(req.body.createdAt);
+    const createdAt = req.body.createdAt ? formatDateForMySQL(req.body.createdAt) : null
     const id = req.params.id;
 
     db.query(
@@ -69,7 +69,7 @@ app.put("/atualizar/:id", (req, res) => {
         [title, description, priority, completed, createdAt, id],
         (err, result) => {
             if (err) {
-                res.status(500).json({ message: "Erro no servidor, verifique a resposta", error: err });
+                res.status(500).json({ message: "Erro no servidor, verifique a resposta", error: err,createdAt:createdAt});
             } else if (result.affectedRows === 0) {
                 res.status(404).json({ message: "Tarefa nao encontrada",taskId:id, affectedRows: result.affectedRows });
             } else {
