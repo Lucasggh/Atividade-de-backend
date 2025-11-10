@@ -41,8 +41,8 @@
                 title: taskTitle.value.trim(),
                 description: taskDescription.value.trim(),
                 priority: taskPriority.value,
-                completed: editingTaskId ? tasks.find(t => Number(t.id) === Number(editingTaskId)).completed : false,
-                createdAt: editingTaskId ? tasks.find(t => Number(t.id) === Number(editingTaskId)).createdAt : new Date().toISOString()}
+                completed: false,
+                createdAt: new Date().toISOString()}
 
 
             if (editingTaskId) {
@@ -52,7 +52,7 @@
                     description: taskDescription.value.trim(),
                     priority: taskPriority.value,
                     completed: originalTask.completed,
-                    completedAt: originalTask.completedAt
+                    createdAt: originalTask.createdAt
                 }
                 axios.put(`http://127.0.0.1:3001/atualizar/${editingTaskId}`,newTask).then(()=>{loadTasks();})
 
@@ -119,7 +119,7 @@
         }
 
         function toggleComplete(id) {
-            const task = tasks.find(t => t.id === Number(id));
+            const task = tasks.find(t => Number(t.id) === Number(id));
             if (task) {
                 task.completed = !task.completed;
                 axios.put(`http://127.0.0.1:3001/atualizar/${id}`,task).then((response)=>{
@@ -133,7 +133,7 @@
             }
         }
         function editTask(id) {                             // HTTP EDIT
-            const task = tasks.find(t => t.id === Number(id));
+            const task = tasks.find(t => Number(t.id) === Number(id));
             if (task) {
                 editingTaskId = id;
                 taskTitle.value = task.title;

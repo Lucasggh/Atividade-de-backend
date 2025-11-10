@@ -8,10 +8,7 @@ console.log("carregado env")
 app.use(cors());
 app.use(express.json())
 
-function formatDateForMySQL(dateString) {
-    const date = new Date(dateString);
-    return date.toISOString().slice(0, 19).replace('T', ' ');
-}
+
 
 const db = mysql2.createConnection({
     host:process.env.DB_HOST,
@@ -21,7 +18,10 @@ const db = mysql2.createConnection({
     port:parseInt(process.env.DB_PORT,10)
 });
 
-
+function formatDateForMySQL(dateString) {
+    const date = new Date(dateString);
+    return date.toISOString().slice(0, 19).replace('T', ' ');
+}
 
 app.get("/",(req,res)=>{
     res.json({status:200})

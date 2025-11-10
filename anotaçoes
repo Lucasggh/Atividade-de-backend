@@ -1,0 +1,73 @@
+Problemas imediatos / bugs que precisam ser corrigidos
+
+    Nome e uso de arquivos confuso: há um arquivo "app.css.html" que contém o HTML da aplicação (deveria ser index.html) e não há um arquivo CSS real chamado app.css. Isso impede servir corretamente o frontend.
+    Tag <script src=index.html.js></script> sem aspas pode funcionar em alguns navegadores, mas é inconsistente; além disso o arquivo JS tem nome que sugere HTML. Organização e nomes de arquivos devem ser padronizados.
+    O backend não serve arquivos estáticos (index.html, app.css, index.html.js). Atualmente o Express só expõe a API; não há rota/serving para o frontend.
+    Comparações de id inconsistentes (strings vs numbers). Código cliente mistura Number(...) e strings; isso pode gerar bugs em buscas/edições/exclusões.
+    Fluxo de edição incompleto: quando edita uma tarefa, o objeto enviado ao PUT nem sempre contém createdAt/id corretamente; campos como completedAt são usados mas não atualizados consistentemente.
+    completedAt nunca é atualizado quando uma tarefa é marcada como concluída; coluna/valor é referenciada no cliente em alguns momentos mas não há lógica para setar completedAt no servidor.
+    Falta validação/valores obrigatórios no servidor (ex.: title vazio). O servidor aceita o que chega sem validação e só devolve erro genérico do DB.
+    Falta tratamento robusto de erros no cliente (ex.: feedback ao usuário quando POST/PUT/DELETE falham além de console.log/alert simples) e loading states.
+    O servidor cria conexão MySQL com mysql2.createConnection mas não há verificação de conexão, pooling, reconexão nem captura de erros de conexão ao iniciar.
+
+Funcionalidades de dados / API faltantes ou incompletas
+
+    Migracoes/Schema: não há script ou documentação com a estrutura da tabela task (colunas, tipos, índices, constraints). Sem isso, não dá para recriar o banco facilmente.
+    Criação/atualização de timestamps: não há createdAt/updatedAt/completedAt consistentes, nem o servidor aplica valores padrão quando o cliente envia nulo.
+    Filtragem/paginação no backend: toda a listagem retorna todas as tarefas; para muitos registros é necessário paginação, filtros e ordenação no servidor.
+    Segurança/validação no servidor: sanitização de entradas, limites de tamanho, validação de enum (priority), e proteções contra payloads inválidos.
+    Controle de concorrência/consistência: não há tratamento se duas pessoas atualizam a mesma tarefa ao mesmo tempo (optimistic locking / updated_at).
+
+Segurança e configuração
+
+    CORS está aberto de forma indiscriminada (app.use(cors())). Em produção o ideal é restringir origins confiáveis.
+    Falta autenticação/autorização (aplicação não tem usuários); qualquer um pode modificar/excluir tarefas.
+    Falta HTTPS / segurança na configuração do servidor (headers, helmet, rate limiting).
+    Variáveis de ambiente: código assume envs sem valores padrão (PORT, DB_*). Falta arquivo .env.example e instruções.
+    Falta sanitização e escaping no servidor para evitar injeção (mesmo usando queries parametrizadas ajuda, mas validação é importante).
+
+Infra, devops e boa prática
+
+    Ausência de package.json, scripts de start e dependências declaradas (express, mysql2, cors, dotenv, axios etc.). Sem isso não tem como instalar/rodar facilmente.
+    Sem Dockerfile / docker-compose para facilitar ambiente local / CI.
+    Sem testes automatizados (unit / integration) para API e lógica crítica.
+    Sem CI (GitHub Actions) para rodar lint/testes/build.
+    Logging insuficiente (console.log apenas). Recomenda-se logging estruturado e níveis (info/warn/error).
+    Ausência de README com instruções de setup, endpoints, e como criar a tabela no MySQL.
+
+Qualidade do código / UX / acessibilidade
+
+    HTML/CSS: falta do arquivo CSS real, acessibilidade limitada, estados de foco/aria incompletos.
+    UX: falta de estados de carregamento, confirmações consistentes, mensagens de sucesso/erro no UI, feedback em operações longas.
+    Internacionalização: strings estão em pt-BR estático; problema se quiser suportar outros idiomas.
+    Responsividade: não há confirmação de que o layout é responsivo/mobile.
+    Organizar melhor o código cliente: separar responsabilidades (API layer, UI render, state management) facilitaria manutenção.
+
+Melhorias funcionais que podem ser adicionadas
+
+    Autenticação (usuários) com escopo por usuário (tarefas por usuário).
+    Histórico/versões de tarefas ou log de alterações.
+    Ordenação e busca (por título, prioridade, data).
+    Anexos/arquivos nas tarefas.
+    Notificações / integração com calendário / lembretes.
+    Export/import (JSON, CSV) e backup.
+
+Coisas menores mas práticas para implementar
+
+    Padronizar nomes de arquivos (index.html, app.css, app.js).
+    Fornecer .env.example com chaves necessárias e valores de exemplo.
+    Retornar createdAt em um formato consistente do servidor (ISO ou timestamp) e documentar.
+    Atualizar update/delete para devolver o objeto atualizado ou número de linhas afetadas de forma consistente.
+    Tratar HTTP status codes e mensagens mais descritivas.
+
+Prioridade sugerida (ordem de implementação)
+
+    Corrigir estrutura de arquivos e servir o frontend (index.html e app.css reais). Garantir que o frontend consiga carregar axios e o script corretamente.
+    Criar/fornecer schema da tabela task e instruções no README; incluir package.json e scripts de start.
+    Corrigir fluxos de edição/complete/delete (consistência de id, createdAt/completedAt, retorno da API).
+    Validar dados no servidor (title obrigatório, prioridade válida, limites) e adicionar tratamento de erros robusto.
+    Implementar conexão DB resiliente (pooling) e checagem/erros ao iniciar.
+    Adicionar .env.example, restrições de CORS para produção e instruções de deploy (Docker/Procfile).
+    Reforçar segurança (auth, helmet, rate limit) se for expor ao público.
+    Melhorias UX: loading, mensagens, acessibilidade e responsividade.
+    Testes automatizados, CI/CD e logging estruturado.
