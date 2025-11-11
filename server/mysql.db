@@ -1,9 +1,11 @@
 
 
-            CREATE DATA BASE todo_app;
+            1) CREATE DATA BASE todo_app;
 
 
-            CREATE TABLE task (
+
+
+            2) CREATE TABLE task (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 title VARCHAR(100) NOT NULL UNIQUE,
                 description VARCHAR(500),

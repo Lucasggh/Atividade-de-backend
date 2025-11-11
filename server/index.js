@@ -2,20 +2,17 @@ const express = require("express");
 const app = express();
 const mysql2 = require("mysql2");
 const cors = require ("cors");
-const dotenv = require("dotenv")
-dotenv.config()
-console.log("carregado env")
 app.use(cors());
 app.use(express.json())
 
 
 
 const db = mysql2.createConnection({
-    host:process.env.DB_HOST,
-    user:process.env.DB_USER,
-    password:process.env.DB_PASSWORD,
-    database:process.env.DB_DATABASE,
-    port:parseInt(process.env.DB_PORT,10)
+    host:"127.0.0.1",
+    user:"root",
+    password:"Lucasggh12344@",
+    database:"todo_app",
+    port:3306
 });
 
 function formatDateForMySQL(dateString) {
@@ -94,6 +91,6 @@ app.delete("/deletar/:id",(req,res)=>{
 })
 
 
-app.listen(parseInt(process.env.PORT,10),()=>{
+app.listen(3001,()=>{
     console.log("servidor rodando")
 })
